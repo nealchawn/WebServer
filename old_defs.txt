@@ -1,0 +1,85 @@
+gcc driver.c -o webserver -l "ws2_32" -fpermissive
+
+
+// IPv4 AF_INET sockets:
+struct sockaddr_in {
+    short            sin_family;   // e.g. AF_INET, AF_INET6
+    unsigned short   sin_port;     // e.g. htons(3490)
+    struct in_addr   sin_addr;     // see struct in_addr, below
+    char             sin_zero[8];  // zero this if you want to
+};
+ 
+ 
+typedef struct in_addr {
+  union {
+    struct {
+      u_char s_b1,s_b2,s_b3,s_b4;
+    } S_un_b;
+    struct {
+      u_short s_w1,s_w2;
+    } S_un_w;
+    u_long S_addr;
+  } S_un;
+} IN_ADDR, *PIN_ADDR, FAR *LPIN_ADDR;
+ 
+ 
+struct sockaddr {
+    unsigned short    sa_family;    // address family, AF_xxx
+    char              sa_data[14];  // 14 bytes of protocol address
+};
+
+struct ether{
+	//unsigned char 1 byte 
+	unsigned char dst[6];
+	unsigned char src[6];
+	unsigned char type[2];
+};
+
+struct ip{
+	#if _BYTE_ORDER == _LITTLE_ENDIAN
+		unsigned int ihl:4;
+		unsigned int version:4;
+	#elif _BYTE_ORDER == _BIG_ENDIAN
+		unsigned int ihl:4;
+		unsigned int version:4;
+	#else
+		#error "Please fix <bits/endian.h>"
+	uint8_t tos;
+	uint16_t total_length;
+	uint16_t identification; //top threebits flags
+	uint16_t offset;
+	uint8_t ttl;
+	uint8_t protocol;
+	uint16_t checksum;
+	uint32_t dst;
+	uint32_t src;
+	//options are here
+	
+};
+
+struct tcp{
+	uint16_t src_port;
+	uint16_t dst_port; 
+	uint32_t sequence_num;
+	uint32_t ack_num;
+	//data_offset & flags 8+8 then window
+	#if _BYTE_ORDER == _LITTLE_ENDIAN
+		unsigned int reserved:4;
+		unsigned int offset:4;
+	#elif _BYTE_ORDER == _BIG_ENDIAN
+		unsigned int offset:4;
+		unsigned int reserved:4;
+	#else
+		#error "Please fix <bits/endian.h>"
+	uint8_t flags;
+	#define TH_FIN 0x01
+	#define TH_SYN 0x02
+	#define TH_RST 0x04
+	#define TH_PUSH 0x08
+	#define TH_ACK 0x10
+	#define TH_URG 0x20
+	uint16_t window;
+	uint16_t sum; //top threebits flags
+	uint16_t2 urg;
+	//options are here
+};
